@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from models import db
-from models import User, Stamp
+from models import User, Stamp, Country, Document
 from flask_jwt_simple import (JWTManager, jwt_required, create_jwt, get_jwt_identity)
 
 
@@ -73,10 +73,37 @@ def handle_user():
     return "ok", 200
 
 
-@app.route('/addStamp', methods=['POST'])
-def handle_stamp():
-    body = request.get_json()
+@app.route('/user/<int:id>/stamp', methods=['GET','POST'])
+def handle_stamp(id):
+    
+    if request.method == 'POST':
+        body = request.get_json() #{ 'username': 'new_username'}
+        if body is None:
+            raise APIException("You need to specify the request body as a json object", status_code=400)
+        if 'photo' not in body:
+            raise APIException('You need to specify the photo', status_code=400)
+        if 'country_label' not in body:
+            raise APIException('You need to specify the country_label', status_code=400)
+        if 'country_value' not in body:
+            raise APIException('You need to specify the country_value', status_code=400)
+        
+        user1 = User.query.get(id)
+        if user1 is None:
+            raise APIException("You need to specify the request body as a json object", status_code=400)
+        try:
+            stamp = Stamp(photo=body['photo'] ,country_value=body['country_value'], country_label=body['country_label'])
+            user1.stamps.append(stamp)
+            db.session.add(user1)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            return jsonify({"error": str(e.__dict__['orig'])}), 409
+        return jsonify({"message": "success"}), 200
 
+    if request.method == 'GET':
+        user1 = Person.query.get(person_id)
+        return jsonify(user1.serialize()), 200
+
+    return "Invalid Method", 404
         # if body is None:
         #     raise APIException("You need to specify the request body as a json object", status_code=400)
         # if 'username' not in body:
@@ -86,6 +113,39 @@ def handle_stamp():
 
     stamp1 = Stamp(user_id=body['user_id'],photo=body['photo'] ,country_value=body['country_value'], country_label=body['country_label'])
     db.session.add(stamp1)
+    db.session.commit()
+    return "ok", 200
+
+@app.route('/documents', methods=['POST'])
+def handle_document():
+    body = request.get_json()
+
+        # if body is None:
+        #     raise APIException("You need to specify the request body as a json object", status_code=400)
+        # if 'username' not in body:
+        #     raise APIException('You need to specify the username', status_code=400)
+        # if 'email' not in body:
+        #     raise APIException('You need to specify the email', status_code=400)
+
+    document1 = Document(user_id=body['user_id'], photo=body['photo'], country_value=body['country_value'], country_label=body['country_label'])
+    db.session.add(document1)
+    db.session.commit()
+    return "ok", 200
+
+
+@app.route('/addCountry', methods=['POST'])
+def handle_country():
+    body = request.get_json()
+
+        # if body is None:
+        #     raise APIException("You need to specify the request body as a json object", status_code=400)
+        # if 'username' not in body:
+        #     raise APIException('You need to specify the username', status_code=400)
+        # if 'email' not in body:
+        #     raise APIException('You need to specify the email', status_code=400)
+
+    country1 = Country(user_id=body['user_id'],latitude=body['latitude'],longitude=body['longitude'] ,country_value=body['country_value'], country_label=body['country_label'])
+    db.session.add(country1)
     db.session.commit()
     return "ok", 200
 
