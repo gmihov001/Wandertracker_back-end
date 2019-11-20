@@ -10,6 +10,7 @@ class User(db.Model):
     stamps = db.relationship('Stamp')
     countries = db.relationship('Country')
     documents = db.relationship('Document')
+    emergencyContacs = db.relationship('EmergencyContac')
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -21,7 +22,8 @@ class User(db.Model):
             "password": self.password,
             "stamps": list(map(lambda x: x.serialize(), self.stamps)),
             "countries": list(map(lambda x: x.serialize(), self.countries)),
-            "documents": list(map(lambda x: x.serialize(), self.documents))
+            "documents": list(map(lambda x: x.serialize(), self.documents)),
+            "emergencyContacs ": list(map(lambda x: x.serialize(), self.emergencyContacs)),
 
         }
 
@@ -72,4 +74,17 @@ class Document(db.Model):
           "photo": self.photo,
           "country_label": self.country_label,
           "country_value": self.country_value
+        }
+
+class EmergencyContac(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(2000), nullable=False)
+    phone_number = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+        nullable=False)
+    def serialize(self):
+        return{
+          "id": self.id,
+          "name": self.name,
+          "phone_number": self.phone_number
         }

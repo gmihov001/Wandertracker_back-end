@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from models import db
-from models import User, Stamp, Country, Document
+from models import User, Stamp, Country, Document, EmergencyContac
 from flask_jwt_simple import (JWTManager, jwt_required, create_jwt, get_jwt_identity)
 
 
@@ -99,9 +99,7 @@ def handle_stamp(id):
             return jsonify({"error": str(e.__dict__['orig'])}), 409
         return jsonify({"message": "success"}), 200
 
-    if request.method == 'GET':
-        user1 = Person.query.get(person_id)
-        return jsonify(user1.serialize()), 200
+    
 
     return "Invalid Method", 404
         # if body is None:
@@ -148,6 +146,50 @@ def handle_country():
     db.session.add(country1)
     db.session.commit()
     return "ok", 200
+
+
+@app.route('/user/<int:id>/emergencyContact', methods=['GET','POST'])
+def handle_emergencyContac(id):
+    
+    if request.method == 'POST':
+        body = request.get_json() #{ 'username': 'new_username'}
+        if body is None:
+            raise APIException("You need to specify the request body as a json object", status_code=400)
+        if 'name' not in body:
+            raise APIException('You need to specify the name', status_code=400)
+        if 'phone_number' not in body:
+            raise APIException('You need to specify the phone_number', status_code=400)
+        
+        
+        user1 = User.query.get(id)
+        if user1 is None:
+            raise APIException("You need to specify the request body as a json object", status_code=400)
+        try:
+            emergencyContact = EmergencyContact(name=body['name'] ,phone_number=body['phone_number'])
+            user1.emergencyContacts.append(emergencyContact)
+            db.session.add(user1)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            return jsonify({"error": str(e.__dict__['orig'])}), 409
+        return jsonify({"message": "success"}), 200
+
+    
+
+    return "Invalid Method", 404
+        # if body is None:
+        #     raise APIException("You need to specify the request body as a json object", status_code=400)
+        # if 'username' not in body:
+        #     raise APIException('You need to specify the username', status_code=400)
+        # if 'email' not in body:
+        #     raise APIException('You need to specify the email', status_code=400)
+
+    emergencyContact1 = EmergencyContact(user_id=body['user_id'],name=body['name'] ,phone_number=body['phone_number'])
+    db.session.add(emergencyContact1)
+    db.session.commit()
+    return "ok", 200
+
+
+
 
 
 # this only runs if `$ python src/main.py` is executed
