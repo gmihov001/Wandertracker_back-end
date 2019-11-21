@@ -194,6 +194,13 @@ def handle_single():
     all_photo = list(map(lambda x: x.serialize(), all_photo))
     return jsonify(all_photo), 200
 
+@app.route('/user/1/document/<int:did>', methods=['DELETE'])
+def handle_delete(uid,did):
+    document = Document.query.get(did)
+    db.session.delete(document)
+    db.session.commit()
+    return "ok", 200
+
 
 
 
