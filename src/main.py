@@ -188,6 +188,12 @@ def handle_emergencyContac(id):
     db.session.commit()
     return "ok", 200
 
+@app.route('/users/0', methods=['GET'])
+def handle_single():
+    all_photo = User.query.all()
+    all_photo = list(map(lambda x: x.serialize(), all_photo))
+    return jsonify(all_photo), 200
+
 
 
 
