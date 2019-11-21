@@ -195,11 +195,11 @@ def handle_single():
     return jsonify(all_photo), 200
 
 @app.route('/user/1/document/<int:did>', methods=['DELETE'])
-def handle_delete(uid,did):
+def handle_delete(did):
     document = Document.query.get(did)
     db.session.delete(document)
     db.session.commit()
-    return "ok", 200
+    return jsonify({"message": "ok"}), 200
 
 
 
