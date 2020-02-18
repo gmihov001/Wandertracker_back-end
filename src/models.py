@@ -128,4 +128,15 @@ class Place(db.Model):
           "phone_number": self.phone_number
         }                        
 
-        
+class Itinerary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(2000), nullable=False)
+    phone_number = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+        nullable=False)
+    def serialize(self):
+        return{
+          "id": self.id,
+          "name": self.name,
+          "phone_number": self.phone_number
+        }                
